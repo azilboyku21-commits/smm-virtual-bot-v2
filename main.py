@@ -6,13 +6,14 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart
 from aiogram.types import (
     Message,
+    CallbackQuery,
     ReplyKeyboardMarkup,
     KeyboardButton,
     InlineKeyboardMarkup,
     InlineKeyboardButton
 )
 
-# 1. Render uchun soxta veb-server (Port timeout xatosini oldini oladi)
+# 1. Render uchun soxta veb-server (Port xatosini oldini oladi)
 async def handle(request):
     return web.Response(text="Bot is running!")
 
@@ -25,7 +26,7 @@ async def start_dummy_server():
     site = web.TCPSite(runner, '0.0.0.0', port)
     await site.start()
 
-# 2. Asosiy Menyu (Pastki tugmalar)
+# 2. Asosiy Asosiy Menyu (Pastki tugmalar)
 main_menu = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="📁 Xizmatlar"), KeyboardButton(text="📞 Nomer Olish")],
@@ -58,7 +59,7 @@ services_inline_menu = InlineKeyboardMarkup(
     ]
 )
 
-# 4. Bot va Dispatcher sozlamalari
+# 4. Bot va Dispatcher
 TOKEN = os.environ.get("BOT_TOKEN")
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -67,7 +68,7 @@ dp = Dispatcher()
 @dp.message(CommandStart())
 async def start_cmd(message: Message):
     await message.answer(
-        "Assalomu alaykum. Botimizga Xush kelibsiz!",
+        "Assalomu alaykum! Botimizga xush kelibsiz.",
         reply_markup=main_menu
     )
 
@@ -79,10 +80,26 @@ async def show_services(message: Message):
         reply_markup=services_inline_menu
     )
 
+# "📞 Nomer Olish" va boshqa menyu tugmalari uchun umumiy handler
+@dp.message(F.text.in_({
+    "📞 Nomer Olish", "🛒 Buyurtmalarim", "🫂 Pul ishlash", 
+    "💰 Mening hisobim", "💵 Hisob to'ldirish", "📩 Yordam", 
+    "☎️ Qo'llab-quvvatlash", "💠 Hamkorlik"
+}))
+async def handle_main_buttons(message: Message):
+    await message.answer(f"Siz **{message.text}** bo'limini tanladingiz.\n\n⚙️ Bu bo'lim tez orada to'liq sozlanadi!")
+
+# Inline tugmalar (Telegram, Instagram va h.k.) bosilganda
+@dp.callback_query(F.data.startswith("serv_"))
+async def handle_services_callback(call: CallbackQuery):
+    await call.answer()
+    await call.message.answer(f"Siz xizmat turini tanladingiz!\n\n⚙️ Tez orada bu yerga o'zingiz xizmatlar va narxlarni qo'shishingiz mumkin.")
+
 async def main():
     logging.basicConfig(level=logging.INFO)
-    await start_dummy_server()  # Port xatosini yopish uchun
+    await start_dummy_server()
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
     asyncio.run(main())
+
