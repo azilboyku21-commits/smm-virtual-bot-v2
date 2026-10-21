@@ -13,7 +13,7 @@ from aiogram.types import (
     InlineKeyboardButton
 )
 
-# Sizning Telegram ID raqamingiz
+# Sizning Admin ID raqamingiz
 ADMIN_ID = 8544987474
 
 # 1. Render uchun soxta veb-server (Port xatosini oldini oladi)
@@ -32,58 +32,68 @@ async def start_dummy_server():
 # 2. Oddiy foydalanuvchilar uchun Asosiy Menyu
 user_main_menu = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="📁 Xizmatlar"), KeyboardButton(text="📞 Nomer Olish")],
-        [KeyboardButton(text="🛒 Buyurtmalarim"), KeyboardButton(text="🫂 Pul ishlash")],
-        [KeyboardButton(text="💰 Mening hisobim"), KeyboardButton(text="💵 Hisob to'ldirish")],
-        [KeyboardButton(text="📩 Yordam"), KeyboardButton(text="☎️ Qo'llab-quvvatlash")],
-        [KeyboardButton(text="💠 Hamkorlik")]
+        [KeyboardButton(text="📁 Buyurtma berish")],
+        [KeyboardButton(text="📊 Buyurtmalar"), KeyboardButton(text="💰 Mening hisobim")],
+        [KeyboardButton(text="🗣 Referal tizimi"), KeyboardButton(text="💵 Hisob to'ldirish")],
+        [KeyboardButton(text="☎️ Murojaat"), KeyboardButton(text="📖 Qo'llanma")],
+        [KeyboardButton(text="🤝 Hamkorlik tizimi")]
     ],
     resize_keyboard=True
 )
 
-# 3. Faqat SIZ (Admin) uchun Asosiy Menyu (Sozlamalar bilan)
+# 3. Admin uchun Asosiy Menyu ("🗄 Boshqaruv" tugmasi bilan)
 admin_main_menu = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="📁 Xizmatlar"), KeyboardButton(text="📞 Nomer Olish")],
-        [KeyboardButton(text="🛒 Buyurtmalarim"), KeyboardButton(text="🫂 Pul ishlash")],
-        [KeyboardButton(text="💰 Mening hisobim"), KeyboardButton(text="💵 Hisob to'ldirish")],
-        [KeyboardButton(text="📩 Yordam"), KeyboardButton(text="☎️ Qo'llab-quvvatlash")],
-        [KeyboardButton(text="💠 Hamkorlik"), KeyboardButton(text="⚙️ Sozlamalar (Admin)")]
+        [KeyboardButton(text="📁 Buyurtma berish")],
+        [KeyboardButton(text="📊 Buyurtmalar"), KeyboardButton(text="💰 Mening hisobim")],
+        [KeyboardButton(text="🗣 Referal tizimi"), KeyboardButton(text="💵 Hisob to'ldirish")],
+        [KeyboardButton(text="☎️ Murojaat"), KeyboardButton(text="📖 Qo'llanma")],
+        [KeyboardButton(text="🤝 Hamkorlik tizimi")],
+        [KeyboardButton(text="🗄 Boshqaruv")]
     ],
     resize_keyboard=True
 )
 
-# 4. Admin Sozlamalar Menyusi (Inline)
-admin_settings_menu = InlineKeyboardMarkup(
+# 4. Boshqaruv (Admin Panel) menyusi
+admin_control_menu = InlineKeyboardMarkup(
     inline_keyboard=[
         [
-            InlineKeyboardButton(text="➕ Xizmat qo'shish", callback_data="add_service"),
-            InlineKeyboardButton(text="➕ Nomer qo'shish", callback_data="add_number")
+            InlineKeyboardButton(text="🔑 Nakrutka API", callback_data="ctrl_nakrutka"),
+            InlineKeyboardButton(text="⭐ Stars va Premium", callback_data="ctrl_stars")
         ],
         [
-            InlineKeyboardButton(text="📊 Statistika", callback_data="admin_stats"),
-            InlineKeyboardButton(text="📢 Xabar yuborish", callback_data="admin_broadcast")
-        ]
-    ]
-)
-
-# 5. Xizmatlar Menyusi
-services_inline_menu = InlineKeyboardMarkup(
-    inline_keyboard=[
-        [
-            InlineKeyboardButton(text="🔵 Telegram", callback_data="serv_telegram"),
-            InlineKeyboardButton(text="🟣 Instagram", callback_data="serv_instagram")
+            InlineKeyboardButton(text="📱 Raqam API", callback_data="ctrl_raqam"),
+            InlineKeyboardButton(text="🎁 Gift", callback_data="ctrl_gift")
         ],
         [
-            InlineKeyboardButton(text="🖤 TikTok", callback_data="serv_tiktok"),
-            InlineKeyboardButton(text="🔴 YouTube", callback_data="serv_youtube")
+            InlineKeyboardButton(text="🛒 Buyurtmalar", callback_data="ctrl_orders"),
+            InlineKeyboardButton(text="👥 Foydalanuvchilar", callback_data="ctrl_users")
         ],
         [
-            InlineKeyboardButton(text="⭐ Telegram [Stars-Premium-Gift]", callback_data="serv_stars")
+            InlineKeyboardButton(text="💳 To'lov tizimlar", callback_data="ctrl_payments"),
+            InlineKeyboardButton(text="🎟 Promokod", callback_data="ctrl_promo")
         ],
         [
-            InlineKeyboardButton(text="🔍 Qidirish", callback_data="serv_search"),
-            InlineKeyboardButton(text="🛒 Barcha xizmatlar ↗️", callback_data="serv_all")
+            InlineKeyboardButton(text="📩 Xabar yuborish", callback_data="ctrl_send"),
+            InlineKeyboardButton(text="📢 Majburiy obuna", callback_data="ctrl_sub")
+        ],
+        [
+            InlineKeyboardButton(text="🔔 Bildirishnomalar", callback_data="ctrl_notif"),
+            InlineKeyboardButton(text="📊 Statistika", callback_data="ctrl_stats")
+        ],
+        [
+            InlineKeyboardButton(text="⚙️ Sozlamalar", callback_data="ctrl_settings"),
+            InlineKeyboardButton(text="🎨 Dizayn", callback_data="ctrl_design")
+        ],
+        [
+            InlineKeyboardButton(text="📖 Qo'llanma", callback_data="ctrl_guide"),
+            InlineKeyboardButton(text="👮‍♂️ Adminlar", callback_data="ctrl_admins")
+        ],
+        [
+            InlineKeyboardButton(text="🌐 Web Panel", callback_data="ctrl_web")
+        ],
+        [
+            InlineKeyboardButton(text="⏪ Orqaga", callback_data="ctrl_back")
         ]
     ]
 )
@@ -92,57 +102,14 @@ TOKEN = os.environ.get("BOT_TOKEN")
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# /start bosilganda
 @dp.message(CommandStart())
 async def start_cmd(message: Message):
     if message.from_user.id == ADMIN_ID:
         await message.answer(
-            "Assalomu alaykum Admin! Xush kelibsiz.",
+            "Assalomu alaykum Boss! Boshqaruv paneliga xush kelibsiz.",
             reply_markup=admin_main_menu
         )
     else:
         await message.answer(
-            "Assalomu alaykum! Botimizga xush kelibsiz.",
-            reply_markup=user_main_menu
-        )
-
-# "⚙️ Sozlamalar (Admin)" bosilganda
-@dp.message(F.text == "⚙️ Sozlamalar (Admin)")
-async def admin_panel(message: Message):
-    if message.from_user.id == ADMIN_ID:
-        await message.answer(
-            "🛠 **Admin boshqaruv paneli:**\n\nQuyidagi tugmalar orqali xizmatlar va nomerlar qo'shishni boshlashingiz mumkin:",
-            reply_markup=admin_settings_menu,
-            parse_mode="Markdown"
-        )
-
-# "📁 Xizmatlar" bosilganda
-@dp.message(F.text == "📁 Xizmatlar")
-async def show_services(message: Message):
-    await message.answer(
-        "✅ Xizmatlarimizni tanlaganingizdan xursandmiz!\n👇 Ijtimoiy tarmoqlardan birini tanlang.",
-        reply_markup=services_inline_menu
-    )
-
-# Sozlamalar menyusidagi tugmalar ishlashi uchun
-@dp.callback_query(F.data.in_({"add_service", "add_number", "admin_stats", "admin_broadcast"}))
-async def admin_actions(call: CallbackQuery):
-    if call.from_user.id == ADMIN_ID:
-        await call.answer()
-        if call.data == "add_service":
-            await call.message.answer("➕ Yangi xizmat qo'shish uchun ma'lumotlarni yuboring (Masalan: Telegram ko'rishlar - 1000 ta = 5000 so'm)")
-        elif call.data == "add_number":
-            await call.message.answer("➕ Yangi davlat va nomer qo'shish uchun narxini kiriting...")
-        elif call.data == "admin_stats":
-            await call.message.answer("📊 Hozircha botda 1 ta foydalanuvchi bor.")
-        elif call.data == "admin_broadcast":
-            await call.message.answer("📢 Barcha foydalanuvchilarga yuboriladigan matnni kiriting...")
-
-async def main():
-    logging.basicConfig(level=logging.INFO)
-    await start_dummy_server()
-    await dp.start_polling(bot)
-
-if __name__ == "__main__":
-    asyncio.run(main())
+            "Assalomu alaykum! Botimizga xush kelibsiz
 
