@@ -13,6 +13,9 @@ from aiogram.types import (
     InlineKeyboardButton
 )
 
+# Sizning Telegram ID raqamingiz
+ADMIN_ID = 8544987474
+
 # 1. Render uchun soxta veb-server (Port xatosini oldini oladi)
 async def handle(request):
     return web.Response(text="Bot is running!")
@@ -26,8 +29,8 @@ async def start_dummy_server():
     site = web.TCPSite(runner, '0.0.0.0', port)
     await site.start()
 
-# 2. Asosiy Asosiy Menyu (Pastki tugmalar)
-main_menu = ReplyKeyboardMarkup(
+# 2. Oddiy foydalanuvchilar uchun Asosiy Menyu
+user_main_menu = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="📁 Xizmatlar"), KeyboardButton(text="📞 Nomer Olish")],
         [KeyboardButton(text="🛒 Buyurtmalarim"), KeyboardButton(text="🫂 Pul ishlash")],
@@ -38,7 +41,33 @@ main_menu = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
-# 3. Inline Menyu ("📁 Xizmatlar" bosilganda chiqadi)
+# 3. Faqat SIZ (Admin) uchun Asosiy Menyu (Sozlamalar bilan)
+admin_main_menu = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="📁 Xizmatlar"), KeyboardButton(text="📞 Nomer Olish")],
+        [KeyboardButton(text="🛒 Buyurtmalarim"), KeyboardButton(text="🫂 Pul ishlash")],
+        [KeyboardButton(text="💰 Mening hisobim"), KeyboardButton(text="💵 Hisob to'ldirish")],
+        [KeyboardButton(text="📩 Yordam"), KeyboardButton(text="☎️ Qo'llab-quvvatlash")],
+        [KeyboardButton(text="💠 Hamkorlik"), KeyboardButton(text="⚙️ Sozlamalar (Admin)")]
+    ],
+    resize_keyboard=True
+)
+
+# 4. Admin Sozlamalar Menyusi (Inline)
+admin_settings_menu = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(text="➕ Xizmat qo'shish", callback_data="add_service"),
+            InlineKeyboardButton(text="➕ Nomer qo'shish", callback_data="add_number")
+        ],
+        [
+            InlineKeyboardButton(text="📊 Statistika", callback_data="admin_stats"),
+            InlineKeyboardButton(text="📢 Xabar yuborish", callback_data="admin_broadcast")
+        ]
+    ]
+)
+
+# 5. Xizmatlar Menyusi
 services_inline_menu = InlineKeyboardMarkup(
     inline_keyboard=[
         [
@@ -59,7 +88,6 @@ services_inline_menu = InlineKeyboardMarkup(
     ]
 )
 
-# 4. Bot va Dispatcher
 TOKEN = os.environ.get("BOT_TOKEN")
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -67,10 +95,26 @@ dp = Dispatcher()
 # /start bosilganda
 @dp.message(CommandStart())
 async def start_cmd(message: Message):
-    await message.answer(
-        "Assalomu alaykum! Botimizga xush kelibsiz.",
-        reply_markup=main_menu
-    )
+    if message.from_user.id == ADMIN_ID:
+        await message.answer(
+            "Assalomu alaykum Admin! Xush kelibsiz.",
+            reply_markup=admin_main_menu
+        )
+    else:
+        await message.answer(
+            "Assalomu alaykum! Botimizga xush kelibsiz.",
+            reply_markup=user_main_menu
+        )
+
+# "⚙️ Sozlamalar (Admin)" bosilganda
+@dp.message(F.text == "⚙️ Sozlamalar (Admin)")
+async def admin_panel(message: Message):
+    if message.from_user.id == ADMIN_ID:
+        await message.answer(
+            "🛠 **Admin boshqaruv paneli:**\n\nQuyidagi tugmalar orqali xizmatlar va nomerlar qo'shishni boshlashingiz mumkin:",
+            reply_markup=admin_settings_menu,
+            parse_mode="Markdown"
+        )
 
 # "📁 Xizmatlar" bosilganda
 @dp.message(F.text == "📁 Xizmatlar")
@@ -80,20 +124,19 @@ async def show_services(message: Message):
         reply_markup=services_inline_menu
     )
 
-# "📞 Nomer Olish" va boshqa menyu tugmalari uchun umumiy handler
-@dp.message(F.text.in_({
-    "📞 Nomer Olish", "🛒 Buyurtmalarim", "🫂 Pul ishlash", 
-    "💰 Mening hisobim", "💵 Hisob to'ldirish", "📩 Yordam", 
-    "☎️ Qo'llab-quvvatlash", "💠 Hamkorlik"
-}))
-async def handle_main_buttons(message: Message):
-    await message.answer(f"Siz **{message.text}** bo'limini tanladingiz.\n\n⚙️ Bu bo'lim tez orada to'liq sozlanadi!")
-
-# Inline tugmalar (Telegram, Instagram va h.k.) bosilganda
-@dp.callback_query(F.data.startswith("serv_"))
-async def handle_services_callback(call: CallbackQuery):
-    await call.answer()
-    await call.message.answer(f"Siz xizmat turini tanladingiz!\n\n⚙️ Tez orada bu yerga o'zingiz xizmatlar va narxlarni qo'shishingiz mumkin.")
+# Sozlamalar menyusidagi tugmalar ishlashi uchun
+@dp.callback_query(F.data.in_({"add_service", "add_number", "admin_stats", "admin_broadcast"}))
+async def admin_actions(call: CallbackQuery):
+    if call.from_user.id == ADMIN_ID:
+        await call.answer()
+        if call.data == "add_service":
+            await call.message.answer("➕ Yangi xizmat qo'shish uchun ma'lumotlarni yuboring (Masalan: Telegram ko'rishlar - 1000 ta = 5000 so'm)")
+        elif call.data == "add_number":
+            await call.message.answer("➕ Yangi davlat va nomer qo'shish uchun narxini kiriting...")
+        elif call.data == "admin_stats":
+            await call.message.answer("📊 Hozircha botda 1 ta foydalanuvchi bor.")
+        elif call.data == "admin_broadcast":
+            await call.message.answer("📢 Barcha foydalanuvchilarga yuboriladigan matnni kiriting...")
 
 async def main():
     logging.basicConfig(level=logging.INFO)
