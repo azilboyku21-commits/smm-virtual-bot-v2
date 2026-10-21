@@ -1,11 +1,20 @@
 import asyncio
+import logging
 import os
 from aiohttp import web
+from aiogram import Bot, Dispatcher, F
+from aiogram.filters import CommandStart
+from aiogram.types import (
+    Message,
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton
+)
 
-# Render port talab qilgani uchun soxta veb-server
+# 1. Render uchun soxta veb-server (Port timeout xatosini oldini oladi)
 async def handle(request):
     return web.Response(text="Bot is running!")
-    await start_dummy_server()
 
 async def start_dummy_server():
     app = web.Application()
@@ -14,36 +23,66 @@ async def start_dummy_server():
     await runner.setup()
     port = int(os.environ.get("PORT", 8080))
     site = web.TCPSite(runner, '0.0.0.0', port)
-    await site.start() 
-import asyncio
-import logging
-import os
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import CommandStart
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+    await site.start()
 
-logging.basicConfig(level=logging.INFO)
+# 2. Asosiy Menyu (Pastki tugmalar)
+main_menu = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="📁 Xizmatlar"), KeyboardButton(text="📞 Nomer Olish")],
+        [KeyboardButton(text="🛒 Buyurtmalarim"), KeyboardButton(text="🫂 Pul ishlash")],
+        [KeyboardButton(text="💰 Mening hisobim"), KeyboardButton(text="💵 Hisob to'ldirish")],
+        [KeyboardButton(text="📩 Yordam"), KeyboardButton(text="☎️ Qo'llab-quvvatlash")],
+        [KeyboardButton(text="💠 Hamkorlik")]
+    ],
+    resize_keyboard=True
+)
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+# 3. Inline Menyu ("📁 Xizmatlar" bosilganda chiqadi)
+services_inline_menu = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(text="🔵 Telegram", callback_data="serv_telegram"),
+            InlineKeyboardButton(text="🟣 Instagram", callback_data="serv_instagram")
+        ],
+        [
+            InlineKeyboardButton(text="🖤 TikTok", callback_data="serv_tiktok"),
+            InlineKeyboardButton(text="🔴 YouTube", callback_data="serv_youtube")
+        ],
+        [
+            InlineKeyboardButton(text="⭐ Telegram [Stars-Premium-Gift]", callback_data="serv_stars")
+        ],
+        [
+            InlineKeyboardButton(text="🔍 Qidirish", callback_data="serv_search"),
+            InlineKeyboardButton(text="🛒 Barcha xizmatlar ↗️", callback_data="serv_all")
+        ]
+    ]
+)
 
-bot = Bot(token=BOT_TOKEN)
+# 4. Bot va Dispatcher sozlamalari
+TOKEN = os.environ.get("BOT_TOKEN")
+bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
+# /start bosilganda
 @dp.message(CommandStart())
-async def start_cmd(message: types.Message):
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="🚀 SMM Xizmatlar", callback_data="smm")],
-            [InlineKeyboardButton(text="📱 Virtual Raqam", callback_data="number")],
-            [InlineKeyboardButton(text="⭐ Telegram Stars", callback_data="stars")],
-            [InlineKeyboardButton(text="🔑 Shaxsiy API", callback_data="api")]
-        ]
+async def start_cmd(message: Message):
+    await message.answer(
+        "Assalomu alaykum. Botimizga Xush kelibsiz!",
+        reply_markup=main_menu
     )
-    await message.answer("👋 Xush kelibsiz! Bo'limni tanlang:", reply_markup=keyboard)
+
+# "📁 Xizmatlar" bosilganda
+@dp.message(F.text == "📁 Xizmatlar")
+async def show_services(message: Message):
+    await message.answer(
+        "✅ Xizmatlarimizni tanlaganingizdan xursandmiz!\n👇 Ijtimoiy tarmoqlardan birini tanlang.",
+        reply_markup=services_inline_menu
+    )
+
 async def main():
-    await bot.delete_webhook(drop_pending_updates=True)
+    logging.basicConfig(level=logging.INFO)
+    await start_dummy_server()  # Port xatosini yopish uchun
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
     asyncio.run(main())
-
