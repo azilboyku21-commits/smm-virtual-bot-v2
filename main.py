@@ -16,7 +16,7 @@ from aiogram.types import (
 # Sizning Admin ID raqamingiz
 ADMIN_ID = 8544987474
 
-# 1. Render uchun soxta veb-server (Port xatosini oldini oladi)
+# 1. Render uchun soxta veb-server
 async def handle(request):
     return web.Response(text="Bot is running!")
 
@@ -41,7 +41,7 @@ user_main_menu = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
-# 3. Admin uchun Asosiy Menyu ("🗄 Boshqaruv" tugmasi bilan)
+# 3. Admin uchun Asosiy Menyu
 admin_main_menu = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="📁 Buyurtma berish")],
@@ -111,5 +111,51 @@ async def start_cmd(message: Message):
         )
     else:
         await message.answer(
-            "Assalomu alaykum! Botimizga xush kelibsiz
+            "Assalomu alaykum! Botimizga xush kelibsiz.",
+            reply_markup=user_main_menu
+        )
 
+@dp.message(F.text == "🗄 Boshqaruv")
+async def control_panel(message: Message):
+    if message.from_user.id == ADMIN_ID:
+        await message.answer(
+            "🎛 **Admin Boshqaruv Paneli**\n\nKerakli bo'limni tanlang:",
+            reply_markup=admin_control_menu,
+            parse_mode="Markdown"
+        )
+    else:
+        await message.answer("Sizga bu bo'limga ruxsat yo'q.")
+
+@dp.callback_query(F.data.startswith("ctrl_"))
+async def control_callbacks(call: CallbackQuery):
+    if call.from_user.id == ADMIN_ID:
+        await call.answer()
+        action = call.data.split("_")[1]
+        
+        if action == "nakrutka":
+            await call.message.answer("🔑 Nakrutka API sozlamalari.")
+        elif action == "stars":
+            await call.message.answer("⭐ Stars va Premium xizmatlari.")
+        elif action == "raqam":
+            await call.message.answer("📱 Raqam API sozlamalari.")
+        elif action == "back":
+            await call.message.answer("Asosiy menyuga qaytdingiz.", reply_markup=admin_main_menu)
+        else:
+            await call.message.answer("Bu bo'lim tez orada ishga tushadi.")
+
+@dp.message(F.text.in_({
+    "📁 Buyurtma berish", "📊 Buyurtmalar", "💰 Mening hisobim", 
+    "🗣 Referal tizimi", "💵 Hisob to'ldirish", "☎️ Murojaat", 
+    "📖 Qo'llanma", "🤝 Hamkorlik tizimi"
+}))
+async def user_sections(message: Message):
+    await message.answer(f"Siz **{message.text}** bo'limini tanladingiz.")
+
+async def main():
+    logging.basicConfig(level=logging.INFO)
+    await start_dummy_server()
+    await bot.delete_webhook(drop_pending_updates=True)
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
