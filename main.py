@@ -1,4 +1,21 @@
 import asyncio
+import os
+from aiohttp import web
+
+# Render port talab qilgani uchun soxta veb-server
+async def handle(request):
+    return web.Response(text="Bot is running!")
+    await start_dummy_server()
+
+async def start_dummy_server():
+    app = web.Application()
+    app.router.add_get('/', handle)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    port = int(os.environ.get("PORT", 8080))
+    site = web.TCPSite(runner, '0.0.0.0', port)
+    await site.start() 
+import asyncio
 import logging
 import os
 from aiogram import Bot, Dispatcher, types
